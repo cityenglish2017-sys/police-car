@@ -19,6 +19,7 @@
       <section id="station">
         <h2>👮 Owen Police Station</h2>
         <div class="policeOfficer">👮‍♂️ Owen 경찰관</div>
+
         <div class="garage">
           <div id="policeCar">🚓</div>
         </div>
@@ -30,19 +31,30 @@
         </div>
 
         <div id="repairPanel" class="hidden">
-          <h3>🔧 어디를 고칠까요?</h3>
-          <button data-repair="타이어">🛞 타이어</button>
-          <button data-repair="엔진">⚙ 엔진</button>
-          <button data-repair="배터리">🔋 배터리</button>
-          <button data-repair="사이렌">🚨 사이렌</button>
+          <h3>🔧 고장난 곳을 고쳐주세요!</h3>
+          <div id="brokenPart">?</div>
+          <p>위에 나온 그림과 같은 버튼을 눌러요.</p>
+
+          <div class="repairButtons">
+            <button data-repair="타이어">🛞<br>타이어</button>
+            <button data-repair="엔진">⚙️<br>엔진</button>
+            <button data-repair="배터리">🔋<br>배터리</button>
+            <button data-repair="사이렌">🚨<br>사이렌</button>
+          </div>
         </div>
       </section>
 
       <section id="city">
         <h2>🗺 Owen City</h2>
+
         <div id="road">
           <div id="cityObjects"></div>
           <div id="movingCar">🚓</div>
+        </div>
+
+        <div id="controller">
+          <button id="leftBtn">⬅️ 왼쪽</button>
+          <button id="rightBtn">오른쪽 ➡️</button>
         </div>
       </section>
     </div>
