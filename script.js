@@ -10,12 +10,24 @@ const towBtn = document.getElementById("towBtn");
 const mechanicBtn = document.getElementById("mechanicBtn");
 const trafficBtn = document.getElementById("trafficBtn");
 const repairPanel = document.getElementById("repairPanel");
+const brokenPart = document.getElementById("brokenPart");
+
+const leftBtn = document.getElementById("leftBtn");
+const rightBtn = document.getElementById("rightBtn");
 
 let score = 0;
 let carX = 45;
 let currentMission = null;
 let gameRunning = false;
 let obstacleTimer = null;
+let brokenPartName = null;
+
+const repairMap = {
+  "타이어": "🛞",
+  "엔진": "⚙️",
+  "배터리": "🔋",
+  "사이렌": "🚨"
+};
 
 const missions = [
   {
@@ -51,13 +63,25 @@ towBtn.addEventListener("click", callTowTruck);
 mechanicBtn.addEventListener("click", callMechanic);
 trafficBtn.addEventListener("click", controlTraffic);
 
-document.addEventListener("keydown", moveCar);
+leftBtn.addEventListener("click", () => moveCarByButton("left"));
+rightBtn.addEventListener("click", () => moveCarByButton("right"));
+
+document.addEventListener("keydown", moveCarByKeyboard);
 
 document.querySelectorAll("#repairPanel button").forEach(btn => {
   btn.addEventListener("click", () => {
-    message.textContent = `👨‍🔧 ${btn.dataset.repair} 수리 완료! 다시 출동할 수 있어요!`;
-    repairPanel.classList.add("hidden");
-    gameRunning = true;
+    const selected = btn.dataset.repair;
+
+    if (selected === brokenPartName) {
+      message.textContent = `👨‍🔧 ${repairMap[selected]} ${selected} 수리 완료! 다시 출동할 수 있어요!`;
+      repairPanel.classList.add("hidden");
+      brokenPart.textContent = "?";
+      brokenPartName = null;
+      gameRunning = true;
+      obstacleTimer = setInterval(spawnObstacle, 1200);
+    } else {
+      message.textContent = `❌ 여기는 고장난 곳이 아니에요. ${repairMap[brokenPartName]} 그림과 같은 버튼을 눌러주세요!`;
+    }
   });
 });
 
@@ -77,7 +101,7 @@ function dispatchPoliceCar() {
   gameRunning = true;
   carX = 45;
   movingCar.style.left = carX + "%";
-  message.textContent = "🚨 WEEOO WEEOO! 경찰차 출동! 장애물을 피하세요!";
+  message.textContent = "🚨 출동! 아래 빨간 조종기 버튼으로 장애물을 피하세요!";
   clearCity();
   spawnMissionTarget();
 
@@ -131,10 +155,10 @@ function spawnObstacle() {
 
     const obsX = parseInt(obstacle.style.left);
     if (y > 310 && y < 390 && Math.abs(obsX - carX) < 12) {
-      message.textContent = "💥 장애물과 부딪혔어요! 정비공을 불러 수리하세요!";
+      message.textContent = "💥 장애물과 부딪혔어요! 고장난 곳을 보고 수리 버튼을 눌러주세요!";
       gameRunning = false;
       clearInterval(obstacleTimer);
-      repairPanel.classList.remove("hidden");
+      showRandomBrokenPart();
     }
 
     if (y > 450) {
@@ -144,7 +168,22 @@ function spawnObstacle() {
   }, 60);
 }
 
-function moveCar(e) {
+function moveCarByButton(direction) {
+  if (!gameRunning) {
+    message.textContent = "🚓 먼저 경찰차를 출동시켜주세요!";
+    return;
+  }
+
+  if (direction === "left") {
+    carX -= 10;
+  } else {
+    carX += 10;
+  }
+
+  limitCarPosition();
+}
+
+function moveCarByKeyboard(e) {
   if (!gameRunning) return;
 
   if (e.key === "ArrowLeft") {
@@ -153,9 +192,12 @@ function moveCar(e) {
     carX += 8;
   }
 
+  limitCarPosition();
+}
+
+function limitCarPosition() {
   if (carX < 5) carX = 5;
   if (carX > 82) carX = 82;
-
   movingCar.style.left = carX + "%";
 }
 
@@ -167,11 +209,19 @@ function maybeCarTrouble() {
       if (gameRunning) {
         gameRunning = false;
         clearInterval(obstacleTimer);
-        message.textContent = "⚠ 경찰차 수리 문제 발생! 정비공을 불러주세요!";
-        repairPanel.classList.remove("hidden");
+        message.textContent = "⚠ 경찰차 고장 발생! 크게 표시된 고장 부위를 수리하세요!";
+        showRandomBrokenPart();
       }
     }, 3500);
   }
+}
+
+function showRandomBrokenPart() {
+  const parts = Object.keys(repairMap);
+  brokenPartName = parts[Math.floor(Math.random() * parts.length)];
+
+  brokenPart.textContent = repairMap[brokenPartName];
+  repairPanel.classList.remove("hidden");
 }
 
 function finishMission() {
@@ -198,9 +248,10 @@ function callTowTruck() {
 }
 
 function callMechanic() {
-  message.textContent = "👨‍🔧 정비공이 왔어요. 고칠 곳을 선택하세요!";
-  repairPanel.classList.remove("hidden");
+  message.textContent = "👨‍🔧 정비공이 왔어요. 고장난 곳을 보고 같은 그림 버튼을 눌러주세요!";
   gameRunning = false;
+  clearInterval(obstacleTimer);
+  showRandomBrokenPart();
 }
 
 function controlTraffic() {
