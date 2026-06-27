@@ -1,269 +1,111 @@
-const callBtn = document.getElementById("callBtn");
-const dispatchBtn = document.getElementById("dispatchBtn");
-const phoneBox = document.getElementById("phoneBox");
+const newCallBtn = document.getElementById("newCallBtn");
+const callScreen = document.getElementById("callScreen");
 const message = document.getElementById("message");
-const movingCar = document.getElementById("movingCar");
-const cityObjects = document.getElementById("cityObjects");
 const scoreSpan = document.getElementById("score");
+const eventIcon = document.getElementById("eventIcon");
 
-const towBtn = document.getElementById("towBtn");
-const mechanicBtn = document.getElementById("mechanicBtn");
-const trafficBtn = document.getElementById("trafficBtn");
-const repairPanel = document.getElementById("repairPanel");
-const brokenPart = document.getElementById("brokenPart");
-
-const leftBtn = document.getElementById("leftBtn");
-const rightBtn = document.getElementById("rightBtn");
+const places = document.querySelectorAll(".place");
+const commandButtons = document.querySelectorAll("#commandPanel button");
 
 let score = 0;
-let carX = 45;
 let currentMission = null;
-let gameRunning = false;
-let obstacleTimer = null;
-let brokenPartName = null;
-
-const repairMap = {
-  "타이어": "🛞",
-  "엔진": "⚙️",
-  "배터리": "🔋",
-  "사이렌": "🚨"
-};
 
 const missions = [
   {
-    type: "robber",
-    call: "☎ 신고! 은행 근처에 도둑이 나타났어요!",
-    success: "👮 도둑 체포 성공! Owen 경찰 최고!"
+    text: "은행에 도둑이 나타났어요!",
+    place: "bank",
+    icon: "😈💰",
+    answer: "arrest",
+    success: "👮 도둑 체포 성공!"
   },
   {
-    type: "lostDog",
-    call: "☎ 민원! 길 잃은 강아지를 찾아주세요!",
-    success: "🐶 강아지를 가족에게 돌려줬어요!"
+    text: "도로에서 차 사고가 났어요!",
+    place: "road",
+    icon: "🚗💥",
+    answer: "tow",
+    success: "🚛 견인차 출동 완료!"
   },
   {
-    type: "accident",
-    call: "☎ 교통사고 발생! 견인차가 필요해요!",
-    success: "🚛 사고 차량을 견인했어요!"
+    text: "신호등이 고장났어요!",
+    place: "road",
+    icon: "🚦",
+    answer: "traffic",
+    success: "🚦 교통정리 성공!"
   },
   {
-    type: "traffic",
-    call: "☎ 신호등 고장! 교통정리가 필요해요!",
-    success: "🚦 교통정리 완료! 차들이 안전하게 지나갔어요!"
+    text: "경찰차가 고장났어요!",
+    place: "garage",
+    icon: "🔧",
+    answer: "repair",
+    success: "👨‍🔧 경찰차 수리 완료!"
   },
   {
-    type: "suspicious",
-    call: "☎ 수상한 사람이 보여요! 순찰이 필요해요!",
-    success: "👮 순찰 완료! Owen City가 안전해졌어요!"
+    text: "공원에 수상한 사람이 있어요!",
+    place: "park",
+    icon: "🕵️",
+    answer: "patrol",
+    success: "🚓 순찰 완료!"
+  },
+  {
+    text: "학교 앞에 민원이 들어왔어요!",
+    place: "school",
+    icon: "📝",
+    answer: "help",
+    success: "📝 민원 처리 완료!"
   }
 ];
 
-callBtn.addEventListener("click", receiveCall);
-dispatchBtn.addEventListener("click", dispatchPoliceCar);
-towBtn.addEventListener("click", callTowTruck);
-mechanicBtn.addEventListener("click", callMechanic);
-trafficBtn.addEventListener("click", controlTraffic);
+newCallBtn.addEventListener("click", makeNewCall);
 
-leftBtn.addEventListener("click", () => moveCarByButton("left"));
-rightBtn.addEventListener("click", () => moveCarByButton("right"));
-
-document.addEventListener("keydown", moveCarByKeyboard);
-
-document.querySelectorAll("#repairPanel button").forEach(btn => {
-  btn.addEventListener("click", () => {
-    const selected = btn.dataset.repair;
-
-    if (selected === brokenPartName) {
-      message.textContent = `👨‍🔧 ${repairMap[selected]} ${selected} 수리 완료! 다시 출동할 수 있어요!`;
-      repairPanel.classList.add("hidden");
-      brokenPart.textContent = "?";
-      brokenPartName = null;
-      gameRunning = true;
-      obstacleTimer = setInterval(spawnObstacle, 1200);
-    } else {
-      message.textContent = `❌ 여기는 고장난 곳이 아니에요. ${repairMap[brokenPartName]} 그림과 같은 버튼을 눌러주세요!`;
-    }
+commandButtons.forEach(button => {
+  button.addEventListener("click", () => {
+    const action = button.dataset.action;
+    handleAction(action);
   });
 });
 
-function receiveCall() {
-  clearCity();
+function makeNewCall() {
+  clearHighlights();
+
   currentMission = missions[Math.floor(Math.random() * missions.length)];
-  phoneBox.textContent = currentMission.call;
-  message.textContent = "어디로 출동할지 확인했어요. 경찰차 출동 버튼을 눌러주세요!";
+
+  callScreen.textContent = "☎ 신고 접수: " + currentMission.text;
+  message.textContent = "지도에서 빨간색으로 표시된 장소를 보고 알맞은 출동 명령을 눌러주세요.";
+
+  const place = document.getElementById(currentMission.place);
+  place.classList.add("highlight");
+
+  const rect = place.getBoundingClientRect();
+  const mapRect = document.getElementById("cityMap").getBoundingClientRect();
+
+  eventIcon.textContent = currentMission.icon;
+  eventIcon.style.left = rect.left - mapRect.left + rect.width / 2 + "px";
+  eventIcon.style.top = rect.top - mapRect.top + rect.height / 2 + "px";
 }
 
-function dispatchPoliceCar() {
+function handleAction(action) {
   if (!currentMission) {
-    message.textContent = "먼저 신고 전화를 받아야 해요!";
+    message.textContent = "먼저 신고 전화를 받아주세요!";
     return;
   }
 
-  gameRunning = true;
-  carX = 45;
-  movingCar.style.left = carX + "%";
-  message.textContent = "🚨 출동! 아래 빨간 조종기 버튼으로 장애물을 피하세요!";
-  clearCity();
-  spawnMissionTarget();
-
-  obstacleTimer = setInterval(spawnObstacle, 1200);
-
-  setTimeout(() => {
-    if (gameRunning) {
-      finishMission();
-    }
-  }, 8500);
-
-  maybeCarTrouble();
-}
-
-function spawnMissionTarget() {
-  const target = document.createElement("div");
-  target.className = "robber";
-
-  if (currentMission.type === "robber") target.textContent = "😈💰";
-  else if (currentMission.type === "lostDog") target.textContent = "🐶";
-  else if (currentMission.type === "accident") target.textContent = "🚗💥";
-  else if (currentMission.type === "traffic") target.textContent = "🚦";
-  else target.textContent = "🕵️";
-
-  cityObjects.appendChild(target);
-}
-
-function spawnObstacle() {
-  if (!gameRunning) return;
-
-  const obstacle = document.createElement("div");
-  obstacle.className = "object";
-
-  const items = ["🚧", "🪨", "🚛", "🌳", "🚗"];
-  obstacle.textContent = items[Math.floor(Math.random() * items.length)];
-  obstacle.style.left = Math.floor(Math.random() * 75 + 10) + "%";
-  obstacle.style.top = "-50px";
-
-  cityObjects.appendChild(obstacle);
-
-  let y = -50;
-  const fall = setInterval(() => {
-    if (!gameRunning) {
-      clearInterval(fall);
-      obstacle.remove();
-      return;
-    }
-
-    y += 8;
-    obstacle.style.top = y + "px";
-
-    const obsX = parseInt(obstacle.style.left);
-    if (y > 310 && y < 390 && Math.abs(obsX - carX) < 12) {
-      message.textContent = "💥 장애물과 부딪혔어요! 고장난 곳을 보고 수리 버튼을 눌러주세요!";
-      gameRunning = false;
-      clearInterval(obstacleTimer);
-      showRandomBrokenPart();
-    }
-
-    if (y > 450) {
-      clearInterval(fall);
-      obstacle.remove();
-    }
-  }, 60);
-}
-
-function moveCarByButton(direction) {
-  if (!gameRunning) {
-    message.textContent = "🚓 먼저 경찰차를 출동시켜주세요!";
-    return;
-  }
-
-  if (direction === "left") {
-    carX -= 10;
+  if (action === currentMission.answer) {
+    score++;
+    scoreSpan.textContent = score;
+    message.textContent = currentMission.success + " 다음 신고를 받아보세요!";
+    callScreen.textContent = "✅ 사건 해결 완료!";
+    currentMission = null;
+    clearHighlights();
+    eventIcon.textContent = "🚓";
+    eventIcon.style.left = "50%";
+    eventIcon.style.top = "48%";
   } else {
-    carX += 10;
-  }
-
-  limitCarPosition();
-}
-
-function moveCarByKeyboard(e) {
-  if (!gameRunning) return;
-
-  if (e.key === "ArrowLeft") {
-    carX -= 8;
-  } else if (e.key === "ArrowRight") {
-    carX += 8;
-  }
-
-  limitCarPosition();
-}
-
-function limitCarPosition() {
-  if (carX < 5) carX = 5;
-  if (carX > 82) carX = 82;
-  movingCar.style.left = carX + "%";
-}
-
-function maybeCarTrouble() {
-  const trouble = Math.random();
-
-  if (trouble < 0.25) {
-    setTimeout(() => {
-      if (gameRunning) {
-        gameRunning = false;
-        clearInterval(obstacleTimer);
-        message.textContent = "⚠ 경찰차 고장 발생! 크게 표시된 고장 부위를 수리하세요!";
-        showRandomBrokenPart();
-      }
-    }, 3500);
+    message.textContent = "❌ 다른 명령이에요. 신고 내용을 다시 보고 알맞은 버튼을 눌러주세요!";
   }
 }
 
-function showRandomBrokenPart() {
-  const parts = Object.keys(repairMap);
-  brokenPartName = parts[Math.floor(Math.random() * parts.length)];
-
-  brokenPart.textContent = repairMap[brokenPartName];
-  repairPanel.classList.remove("hidden");
-}
-
-function finishMission() {
-  gameRunning = false;
-  clearInterval(obstacleTimer);
-
-  if (!currentMission) return;
-
-  message.textContent = currentMission.success;
-  score++;
-  scoreSpan.textContent = score;
-
-  currentMission = null;
-  phoneBox.textContent = "☎ 신고 대기 중...";
-}
-
-function callTowTruck() {
-  if (currentMission && currentMission.type === "accident") {
-    message.textContent = "🚛 견인차 출동! 사고 차량을 안전하게 옮겼어요!";
-    finishMission();
-  } else {
-    message.textContent = "🚛 지금은 견인차가 꼭 필요하지 않아요.";
-  }
-}
-
-function callMechanic() {
-  message.textContent = "👨‍🔧 정비공이 왔어요. 고장난 곳을 보고 같은 그림 버튼을 눌러주세요!";
-  gameRunning = false;
-  clearInterval(obstacleTimer);
-  showRandomBrokenPart();
-}
-
-function controlTraffic() {
-  if (currentMission && currentMission.type === "traffic") {
-    message.textContent = "🚦 STOP! GO! 교통정리 성공!";
-    finishMission();
-  } else {
-    message.textContent = "👮 지금은 교통정리가 필요하지 않아요.";
-  }
-}
-
-function clearCity() {
-  cityObjects.innerHTML = "";
-  clearInterval(obstacleTimer);
+function clearHighlights() {
+  places.forEach(place => {
+    place.classList.remove("highlight");
+  });
 }
