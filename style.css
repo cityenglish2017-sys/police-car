@@ -1,0 +1,186 @@
+body {
+  margin: 0;
+  background: #102542;
+  font-family: Arial, sans-serif;
+  color: white;
+  text-align: center;
+}
+
+#game {
+  width: 100vw;
+  min-height: 100vh;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+h1 {
+  margin: 8px 0;
+  color: #ffd54f;
+  text-shadow: 2px 2px #000;
+}
+
+#topPanel {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+#phoneBox {
+  background: #fff;
+  color: #111;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-size: 20px;
+  font-weight: bold;
+  min-width: 330px;
+}
+
+button {
+  font-size: 17px;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  background: #ffd54f;
+  font-weight: bold;
+}
+
+button:hover {
+  transform: scale(1.05);
+}
+
+#mainScreen {
+  display: flex;
+  height: 560px;
+  border: 5px solid #fff;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+#station, #city {
+  width: 50%;
+  position: relative;
+}
+
+#station {
+  background: linear-gradient(#2b65ec, #163b80);
+  border-right: 4px solid white;
+}
+
+#city {
+  background: linear-gradient(#87ceeb, #d9f4ff);
+  color: #111;
+}
+
+.policeOfficer {
+  font-size: 34px;
+  margin-top: 30px;
+}
+
+.garage {
+  width: 260px;
+  height: 150px;
+  background: #ddd;
+  border: 8px solid #333;
+  border-radius: 18px;
+  margin: 35px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#policeCar {
+  font-size: 80px;
+  animation: siren 0.6s infinite alternate;
+}
+
+@keyframes siren {
+  from { filter: drop-shadow(0 0 3px red); }
+  to { filter: drop-shadow(0 0 15px blue); }
+}
+
+#tools {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 220px;
+  margin: 0 auto;
+}
+
+#repairPanel {
+  background: rgba(255,255,255,0.95);
+  color: #111;
+  padding: 12px;
+  border-radius: 15px;
+  width: 320px;
+  margin: 20px auto;
+}
+
+.hidden {
+  display: none;
+}
+
+#road {
+  position: relative;
+  width: 90%;
+  height: 430px;
+  background: #555;
+  margin: 25px auto;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 6px solid #333;
+}
+
+#road::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 8px;
+  height: 100%;
+  background: repeating-linear-gradient(
+    white 0 30px,
+    transparent 30px 60px
+  );
+}
+
+#movingCar {
+  position: absolute;
+  bottom: 20px;
+  left: 45%;
+  font-size: 54px;
+  transition: left 0.15s;
+  z-index: 3;
+}
+
+.object {
+  position: absolute;
+  font-size: 42px;
+  z-index: 2;
+}
+
+.robber {
+  position: absolute;
+  font-size: 50px;
+  top: 30px;
+  left: 45%;
+  z-index: 4;
+}
+
+#message {
+  margin-top: 12px;
+  background: #fff;
+  color: #111;
+  padding: 14px;
+  border-radius: 14px;
+  font-size: 22px;
+  font-weight: bold;
+}
+
+#scoreBox {
+  margin-top: 8px;
+  font-size: 22px;
+  color: #ffd54f;
+}

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>Owen Police Car Game</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="game">
+    <h1>🚔 Owen Police Car Game 🚨</h1>
+
+    <div id="topPanel">
+      <div id="phoneBox">☎ 신고 대기 중...</div>
+      <button id="callBtn">📞 신고 받기</button>
+      <button id="dispatchBtn">🚓 경찰차 출동!</button>
+    </div>
+
+    <div id="mainScreen">
+      <section id="station">
+        <h2>👮 Owen Police Station</h2>
+        <div class="policeOfficer">👮‍♂️ Owen 경찰관</div>
+        <div class="garage">
+          <div id="policeCar">🚓</div>
+        </div>
+
+        <div id="tools">
+          <button id="towBtn">🚛 견인차 호출</button>
+          <button id="mechanicBtn">👨‍🔧 정비공 호출</button>
+          <button id="trafficBtn">🚦 교통정리</button>
+        </div>
+
+        <div id="repairPanel" class="hidden">
+          <h3>🔧 어디를 고칠까요?</h3>
+          <button data-repair="타이어">🛞 타이어</button>
+          <button data-repair="엔진">⚙ 엔진</button>
+          <button data-repair="배터리">🔋 배터리</button>
+          <button data-repair="사이렌">🚨 사이렌</button>
+        </div>
+      </section>
+
+      <section id="city">
+        <h2>🗺 Owen City</h2>
+        <div id="road">
+          <div id="cityObjects"></div>
+          <div id="movingCar">🚓</div>
+        </div>
+      </section>
+    </div>
+
+    <div id="message">경찰서에서 신고 전화를 기다리고 있어요.</div>
+    <div id="scoreBox">⭐ 해결한 사건: <span id="score">0</span></div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
